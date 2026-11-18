@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Chantiers">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8c2a1f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Gestion de chantiers</title>
+<style>
+:root{--bg:#f6f4ef;--sf:#fff;--tx:#1f1d1a;--mu:#6b665e;--bd:#e2ddd3;--ac:#b5541c;--ac2:#fbeadd;--ok:#2f7d4f;--ko:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171614;--sf:#222120;--tx:#efece6;--mu:#a09a90;--bd:#37352f;--ac:#e08a52;--ac2:#3a2a1f;--ok:#6cc08a;--ko:#f08a82;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171614;--sf:#222120;--tx:#efece6;--mu:#a09a90;--bd:#37352f;--ac:#e08a52;--ac2:#3a2a1f;--ok:#6cc08a;--ko:#f08a82;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 16px 0;max-width:1000px;margin:auto}
+h1{font-size:20px;margin:0 0 10px}
+nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
+nav button{border:1px solid var(--bd);background:var(--sf);color:var(--tx);padding:8px 14px;border-radius:20px;cursor:pointer;white-space:nowrap;font:inherit}
+nav button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+main{max-width:1000px;margin:auto;padding:8px 16px 40px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin:8px 0 12px;gap:8px;flex-wrap:wrap}
+.bar h2{font-size:17px;margin:0}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font:inherit}
+.btn.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.btn.s{padding:4px 10px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 14px}
+.card h3{margin:0 0 4px;font-size:15px}
+.mu{color:var(--mu);font-size:13px}
+.kpi{font-size:22px;font-weight:600;margin-top:2px}
+.ok{color:var(--ok)}.ko{color:var(--ko)}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:10px;background:var(--ac2);color:var(--ac)}
+.prog{height:6px;background:var(--bd);border-radius:4px;overflow:hidden;margin:8px 0}
+.prog i{display:block;height:100%;background:var(--ac)}
+.row{display:flex;gap:6px;margin-top:8px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:var(--sf);border:1px solid var(--bd);border-radius:10px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd);font-size:14px;white-space:nowrap}
+th{color:var(--mu);font-weight:500}
+.empty{padding:30px;text-align:center;color:var(--mu)}
+dialog{border:1px solid var(--bd);border-radius:12px;background:var(--sf);color:var(--tx);width:min(440px,92vw);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+#dlg.shim{display:none;position:fixed;inset:0;margin:auto;height:fit-content;z-index:60;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}#dlg.shim[open]{display:block}
+label{display:block;font-size:13px;color:var(--mu);margin-top:10px}
+input,select,textarea{width:100%;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+select[multiple]{height:90px}
+#st{font-size:12px;color:var(--mu);margin-top:6px}
+.rep{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:16px}
+.rep h2{margin:0 0 4px}.rep h3{margin:16px 0 6px;font-size:15px}
+html{-webkit-text-size-adjust:100%}
+input,select,textarea{font-size:16px}
+.btn,nav button{min-height:40px;touch-action:manipulation}
+.btn.s{min-height:34px}
+dialog{max-height:90vh;overflow:auto}
+#f>.row:last-child{position:sticky;bottom:-16px;background:var(--sf);margin:16px -16px -16px!important;padding:10px 16px;border-top:1px solid var(--bd)}
+@media (max-width:560px){main{padding:8px 12px 40px}header{padding:12px 12px 0}.grid{grid-template-columns:1fr}.bar h2{font-size:16px}}
+@media print{header,.noprint,#st{display:none!important}body{background:#fff;color:#000}.rep{border:0;padding:0}}
+</style>
+</head>
+<body>
+<header><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="display:flex;align-items:center;gap:10px"><img id="lg" alt="" style="display:none;max-height:44px;max-width:90px;object-fit:contain"><div><h1 id="ttl" style="margin:0"></h1><div class="mu" id="sub"></div></div></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn s" id="inst" style="display:none" onclick="doInstall()">📲 Installer</button><button class="btn g s" onclick="editEnt()">⚙ Mon entreprise</button></div></div><div id="sync" class="mu" style="font-size:12px;margin-top:6px"></div><nav id="nav" style="margin-top:8px"></nav></header>
+<main id="main"></main>
+<div id="auth" style="display:none;position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto"><div style="max-width:380px;margin:8vh auto;padding:16px">
+<h2 style="margin:0 0 6px">Connexion</h2>
+<div class="mu">Connectez-vous pour retrouver vos données sur tous vos appareils et les garder en sécurité en ligne.</div>
+<label>E-mail</label><input id="aem" type="email" autocomplete="username" inputmode="email">
+<label>Mot de passe (6 caractères minimum)</label><input id="apw" type="password" autocomplete="current-password">
+<div id="aerr" style="min-height:20px;margin-top:8px;font-size:13px"></div>
+<div class="row"><button type="button" class="btn" id="alogin">Se connecter</button><button type="button" class="btn g" id="areg">Créer un compte</button></div>
+<div class="row"><button type="button" class="btn g s" id="areset">Mot de passe oublié</button><button type="button" class="btn g s" id="askip">Continuer sans compte</button></div>
+</div></div>
+<dialog id="dlg" role="dialog" aria-modal="true"><form id="f" method="dialog" onsubmit="return false"></form></dialog>
+<script>
+(function(){var d=document.getElementById("dlg");if(typeof d.showModal==="function")return;
+d.classList.add("shim");
+d.showModal=function(){d.setAttribute("open","");d.open=true};
+d.close=function(){if(!d.hasAttribute("open"))return;d.removeAttribute("open");d.open=false;d.dispatchEvent(new Event("close"))};
+d.open=false})();
+var S={clients:[],equipes:[],chantiers:[],finances:[],devis:[],pointages:[],taches:[],ent:{}},rapC="",tab="dash",KEY="gestion-chantiers-v1",ref=null,tm=null;
+var STAT=["Devis","En cours","En pause","Terminé"];
+var CATS=["Matériaux","Main-d’œuvre","Transport","Matériel","Autre"];
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fm(n){return (Number(n)||0).toLocaleString("fr-FR")+" FCFA"}
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function by(k,id){return S[k].find(function(x){return x.id===id})}
+function nm(k,id){var x=by(k,id);return x?x.nom:"—"}
+
+var SCHEMA={
+clients:{t:"Client",f:[["nom","Nom","text"],["tel","Téléphone","text"],["email","E-mail","text"],["adresse","Adresse","text"]]},
+equipes:{t:"Membre d’équipe",f:[["nom","Nom","text"],["role","Spécialité (ex. maçon, poseur)","text"],["tel","Téléphone","text"],["tarif","Tarif journalier (FCFA)","number"]]},
+chantiers:{t:"Chantier",f:[["nom","Nom du chantier","text"],["client","Client","ref:clients"],["lieu","Lieu","text"],["statut","Statut","sel:"+STAT.join("|")],["debut","Début","date"],["fin","Fin prévue","date"],["budget","Budget (FCFA)","number"],["avanc","Avancement (%)","number"],["equipe","Équipe affectée","multi:equipes"]]},
+finances:{t:"Opération",f:[["type","Type","sel:Recette|Dépense"],["date","Date","date"],["montant","Montant (FCFA)","number"],["chantier","Chantier","ref:chantiers"],["tache","Tâche (facultatif)","ref:taches"],["cat","Catégorie","sel:"+CATS.join("|")],["desc","Description","text"]]},
+devis:{t:"Devis / Facture",f:[["type","Type","sel:Devis|Facture"],["numero","Numéro","text"],["date","Date","date"],["client","Client","ref:clients"],["chantier","Chantier","ref:chantiers"],["tache","Tâche (facultatif)","ref:taches"],["montant","Montant (FCFA)","number"],["statut","Statut","sel:Brouillon|Envoyé|Accepté|Payé|Refusé"],["desc","Objet","text"]]},
+pointages:{t:"Pointage",f:[["date","Date","date"],["membre","Ouvrier","ref:equipes"],["chantier","Chantier","ref:chantiers"],["tache","Tâche (facultatif)","ref:taches"],["jours","Jours travaillés","number"],["note","Note","text"]]},
+taches:{t:"Tâche",f:[["nom","Nom de la tâche","text"],["chantier","Chantier","ref:chantiers"],["budget","Budget alloué (FCFA)","number"],["statut","Statut","sel:À faire|En cours|Terminé"],["desc","Détails","text"]]}
+};
+var REQ={clients:[["nom","Nom"]],equipes:[["nom","Nom"]],chantiers:[["nom","Nom du chantier"]],taches:[["nom","Nom de la tâche"],["chantier","Chantier"]],finances:[["montant","Montant"]],devis:[["montant","Montant"]],pointages:[["membre","Ouvrier"],["jours","Jours travaillés"]]};
+function tcost(tid){
+  var c={fact:0,mat:0,mo:0,aut:0};
+  S.devis.forEach(function(d){if(d.tache===tid&&d.type=="Facture")c.fact+=Number(d.montant)||0});
+  S.finances.forEach(function(f){if(f.tache===tid&&f.type=="Dépense"){var v=Number(f.montant)||0;if(f.cat==CATS[0])c.mat+=v;else if(f.cat==CATS[1])c.mo+=v;else c.aut+=v}});
+  S.pointages.forEach(function(p){if(p.tache===tid){var m=by("equipes",p.membre);c.mo+=(Number(p.jours)||0)*(m?Number(m.tarif)||0:0)}});
+  c.use=c.mat+c.mo+c.aut;return c;
+}
+function tdep(tid){return tcost(tid).use}
+function addT(cid){edit("taches");$("f").elements["chantier"].value=cid}
+function mo(cid){var t=0;S.pointages.forEach(function(p){if(!cid||p.chantier===cid){var m=by("equipes",p.membre);t+=(Number(p.jours)||0)*(m?Number(m.tarif)||0:0)}});return t}
+function dl(name,data,mime){
+  var b=new Blob([data],{type:mime});
+  var anchor=function(){var u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},5000)};
+  var mobile=/iphone|ipad|ipod|android/i.test(navigator.userAgent||"");
+  try{
+    if(mobile&&window.File&&navigator.canShare){var f=new File([b],name,{type:mime});
+      if(navigator.canShare({files:[f]})){navigator.share({files:[f],title:name}).catch(function(e){if(e&&e.name!=="AbortError")anchor()});return}}
+  }catch(e){}
+  anchor();
+}
+function csvCell(v){v=String(v==null?"":v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+function exportCSV(kind){
+  if(kind=="taches"){var rr=[["Tâche","Chantier","Statut","Budget","Coût facturé","Matériaux","Main-d’œuvre","Autres","Coût utilisé","Reste budget","Solde"]];
+    S.taches.forEach(function(t){var k=tcost(t.id);rr.push([t.nom,nm("chantiers",t.chantier),t.statut,t.budget,k.fact,k.mat,k.mo,k.aut,k.use,(t.budget||0)-k.use,k.fact-k.use])});
+    return dl("taches.csv","﻿"+rr.map(function(r){return r.map(csvCell).join(";")}).join("\r\n"),"text/csv")}
+  var sc=SCHEMA[kind],rows=[sc.f.map(function(f){return f[1]})];
+  S[kind].forEach(function(o){rows.push(sc.f.map(function(f){
+    var v=o[f[0]],t=f[2];
+    if(t.indexOf("ref:")==0)return nm(t.slice(4),v);
+    if(t.indexOf("multi:")==0)return(v||[]).map(function(i){return nm(t.slice(6),i)}).join(", ");
+    return v}))});
+  dl(kind+".csv","﻿"+rows.map(function(r){return r.map(csvCell).join(";")}).join("\r\n"),"text/csv");
+}
+
+function entHead(){
+  var e=S.ent||{};if(!e.nom&&!e.logo)return"";
+  var l=[e.activite,e.tel,e.email,e.adresse].filter(function(x){return x}).map(esc).join(" · ");
+  return"<div style='margin-bottom:12px;display:flex;align-items:center;gap:10px'>"+(e.logo?"<img src=\""+e.logo+"\" style='max-height:56px;max-width:120px'>":"")+"<div><b style='font-size:17px'>"+esc(e.nom||"")+"</b>"+(l?"<br><span class='mu'>"+l+"</span>":"")+"</div></div>";
+}
+function editEnt(){
+  var e=S.ent||{};
+  var lg=e.logo||"";
+  function fl(k,lb,ph){return"<label>"+lb+"</label><input name='"+k+"' placeholder='"+ph+"' value=\""+esc(e[k]||"")+"\">"}
+  $("f").innerHTML="<h3 style='margin:0'>Mon entreprise</h3><div class='mu'>Ces informations apparaissent en haut de l’application et sur les rapports.</div>"+
+  fl("nom","Nom de l’entreprise","Ex. Entreprise Dupont BTP")+fl("activite","Activité ou slogan (facultatif)","Ex. Terrazzo et béton minéral")+fl("tel","Téléphone (facultatif)","")+fl("email","E-mail (facultatif)","")+fl("adresse","Adresse (facultatif)","")+
+  "<label>Logo (facultatif)</label><div style='display:flex;align-items:center;gap:10px'><img id='lgp' alt='' style='max-height:56px;max-width:120px;display:"+(lg?"block":"none")+"' src=\""+lg+"\"><div><input type='file' id='lgf' accept='image/*'><button type='button' class='btn g s' id='lgx' style='margin-top:6px'>Retirer le logo</button></div></div>"+
+  "<label>Sauvegarde des données</label><div class='row' style='margin-top:4px'><button type='button' class='btn g s' id='bk'>Sauvegarder (fichier)</button><button type='button' class='btn g s' id='rs'>Restaurer…</button><input type='file' id='rsf' accept='application/json,.json' style='display:none'></div>"+
+  "<label>Compte en ligne</label>"+acctHtml()+
+  "<div class='row' style='margin-top:16px;justify-content:flex-end'><button type='button' class='btn g' id='cx'>Annuler</button><button type='button' class='btn' id='ok'>Enregistrer</button></div>";
+  $("cx").onclick=function(){$("dlg").close()};
+  $("ok").onclick=function(){
+    var n={};["nom","activite","tel","email","adresse"].forEach(function(k){n[k]=$("f").elements[k].value.trim()});
+    n.logo=lg;S.ent=n;save();$("dlg").close();render();
+  };
+  $("lgx").onclick=function(){lg="";$("lgp").style.display="none";$("lgf").value=""};
+  $("lgf").onchange=function(){
+    var f=this.files[0];if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      var im=new Image();
+      im.onload=function(){
+        var sc=Math.min(1,240/Math.max(im.width,im.height)),cv=document.createElement("canvas");
+        cv.width=Math.max(1,Math.round(im.width*sc));cv.height=Math.max(1,Math.round(im.height*sc));
+        var cx=cv.getContext("2d");cx.drawImage(im,0,0,cv.width,cv.height);
+        var u=cv.toDataURL("image/png");
+        if(u.length>250000){cx.globalCompositeOperation="destination-over";cx.fillStyle="#fff";cx.fillRect(0,0,cv.width,cv.height);u=cv.toDataURL("image/jpeg",0.85)}
+        lg=u;$("lgp").src=u;$("lgp").style.display="block";
+      };
+      im.onerror=function(){alert("Image illisible. Essayez un fichier PNG ou JPG.")};
+      im.src=rd.result;
+    };
+    rd.readAsDataURL(f);
+  };
+  $("bk").onclick=function(){dl("sauvegarde-chantiers-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(S),"application/json")};
+  $("rs").onclick=function(){$("rsf").click()};
+  $("rsf").onchange=function(){
+    var f=this.files[0];this.value="";if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var o=JSON.parse(rd.result);
+        if(!o||typeof o!=="object"||!["clients","chantiers","equipes","finances","devis","pointages","taches"].some(function(k){return Array.isArray(o[k])}))throw new Error("format");
+        if(!confirm("Remplacer toutes les données actuelles par cette sauvegarde ?"))return;
+        for(var k in S)S[k]=(k=="ent"?(o.ent&&typeof o.ent=="object"?o.ent:{}):(Array.isArray(o[k])?o[k]:[]));
+        save();$("dlg").close();render();alert("Données restaurées.");
+      }catch(e){alert("Fichier de sauvegarde invalide.")}
+    };
+    rd.readAsText(f);
+  };
+  wireAcct();
+  $("dlg").showModal();
+}
+var dirty={},lastJ={},dbExists=false,writing=false,again=false,pendSnap=null,connected=false;
+var EMPTY=function(k){return JSON.stringify(k=="ent"?{}:[])};
+function setSync(m){var e=$("sync");if(e)e.textContent=m}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  for(var k in S){if(JSON.stringify(S[k])!==lastJ[k])dirty[k]=1}
+  pd();
+  clearTimeout(tm);
+  if(ref&&connected){setSync("Synchronisation…");tm=setTimeout(flush,500)}
+}
+function flush(){
+  if(!ref)return;
+  if(writing){again=true;return}
+  var keys=Object.keys(dirty);
+  if(!keys.length){setSync("✓ Synchronisé avec vos autres appareils");return}
+  var obj={};(dbExists?keys:Object.keys(S)).forEach(function(k){obj[k]=JSON.parse(JSON.stringify(S[k]))});
+  writing=true;
+  (dbExists?ref.update(obj):ref.set(obj)).then(function(){
+    writing=false;dbExists=true;
+    for(var k in obj){lastJ[k]=JSON.stringify(obj[k]);if(JSON.stringify(S[k])===lastJ[k])delete dirty[k]}
+    pd();
+    if(again||Object.keys(dirty).length){again=false;flush()}else setSync("✓ Synchronisé avec vos autres appareils");
+  }).catch(function(){writing=false;setSync("⚠ Synchronisation impossible, nouvel essai…");clearTimeout(tm);tm=setTimeout(flush,5000)});
+}
+function applyRemote(o){
+  var ch=false;
+  for(var k in S){
+    if(dirty[k])continue;
+    var r=o[k];
+    if(r===undefined){if(JSON.stringify(S[k])!==EMPTY(k)){dirty[k]=1;lastJ[k]=""}continue}
+    var rj=JSON.stringify(r);lastJ[k]=rj;
+    if(JSON.stringify(S[k])!==rj){if(!bakDone&&JSON.stringify(S[k])!==EMPTY(k)){try{localStorage.setItem(KEY+"-avant-sync",JSON.stringify(S))}catch(e){}bakDone=true}S[k]=JSON.parse(rj);ch=true}
+  }
+  if(ch){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()}
+  if(Object.keys(dirty).length)flush();
+}
+function onRemote(snap){
+  if(snap.metadata&&snap.metadata.fromCache)return;
+  connected=true;
+  if($("dlg").open){pendSnap=snap;return}
+  if(!snap.exists){
+    dbExists=false;
+    for(var k in S){if(JSON.stringify(S[k])!==EMPTY(k))dirty[k]=1}
+  }else{dbExists=true;applyRemote(snap.data())}
+  if(Object.keys(dirty).length)flush();
+  else if(!writing)setSync("✓ Synchronisé avec vos autres appareils");
+}
+function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);for(var k in S)S[k]=o[k]||(k=="ent"?{}:[])}}catch(e){}}
+
+function field(f,v){
+  var k=f[0],t=f[2],h="<label>"+f[1]+"</label>",nme=' name="'+k+'"';
+  if(t.indexOf("sel:")==0){return h+"<select"+nme+">"+t.slice(4).split("|").map(function(o){return"<option"+(o===v?" selected":"")+">"+o+"</option>"}).join("")+"</select>"}
+  if(t.indexOf("ref:")==0){var c=t.slice(4);return h+"<select"+nme+"><option value=''>—</option>"+S[c].map(function(x){return"<option value='"+x.id+"'"+(x.id===v?" selected":"")+">"+esc((x.nom||x.numero||x.desc)+(c=="taches"?" ("+nm("chantiers",x.chantier)+")":""))+"</option>"}).join("")+"</select>"}
+  if(t.indexOf("multi:")==0){var c2=t.slice(6),a=v||[];return h+"<select"+nme+" multiple>"+S[c2].map(function(x){return"<option value='"+x.id+"'"+(a.indexOf(x.id)>-1?" selected":"")+">"+esc(x.nom)+"</option>"}).join("")+"</select>"}
+  return h+"<input"+nme+' type="'+t+'" value="'+esc(v)+'">';
+}
+function edit(kind,id){
+  var sc=SCHEMA[kind],o=id?by(kind,id):{};
+  if(!id&&(kind=="finances"||kind=="devis"||kind=="pointages")){o={date:new Date().toISOString().slice(0,10)};if(kind=="pointages")o.jours=1}
+  $("f").innerHTML="<h3 style='margin:0'>"+(id?"Modifier":"Ajouter")+" — "+sc.t+"</h3>"+sc.f.map(function(f){return field(f,o[f[0]])}).join("")+
+  "<div class='row' style='margin-top:16px;justify-content:flex-end'><button type='button' class='btn g' id='cx'>Annuler</button><button type='button' class='btn' id='ok'>Enregistrer</button></div>";
+  $("cx").onclick=function(){$("dlg").close()};
+  $("ok").onclick=function(){
+    var el0=$("f").elements,need=REQ[kind];
+    if(need){var miss=need.filter(function(n){var e=el0[n[0]];return !e||!String(e.value).trim()||(e.type=="number"&&!(Number(e.value)>0))});
+      if(miss.length){alert("Veuillez renseigner : "+miss.map(function(n){return n[1]}).join(", ")+".");var fe=el0[miss[0][0]];if(fe&&fe.focus)fe.focus();return}}
+    var r=id?by(kind,id):{id:newId()};
+    sc.f.forEach(function(f){
+      var el=$("f").elements[f[0]];
+      if(f[2].indexOf("multi:")==0){r[f[0]]=Array.prototype.filter.call(el.options,function(x){return x.selected}).map(function(x){return x.value})}
+      else if(f[2]=="number"){r[f[0]]=Number(el.value)||0}
+      else r[f[0]]=el.value;
+    });
+    if(r.tache){var tk=by("taches",r.tache);if(tk)r.chantier=tk.chantier}
+    if(kind=="chantiers")r.avanc=Math.max(0,Math.min(100,Number(r.avanc)||0));
+    if(kind=="pointages")r.jours=Math.max(0,Number(r.jours)||0);
+    if(typeof r.nom=="string")r.nom=r.nom.trim();
+    if(!id)S[kind].push(r);
+    save();$("dlg").close();render();
+  };
+  $("dlg").showModal();
+}
+function del(kind,id){
+  var LINK={chantiers:{f:"chantier",in:["taches","finances","devis","pointages"]},taches:{f:"tache",in:["finances","devis","pointages"]},clients:{f:"client",in:["chantiers","devis"]},equipes:{f:"membre",in:["pointages"]}}[kind];
+  var n=0;if(LINK)LINK.in.forEach(function(k){S[k].forEach(function(x){if(x[LINK.f]===id)n++})});
+  var msg="Supprimer cet élément ?";
+  if(n){
+    if(kind=="chantiers")msg="Supprimer ce chantier ET ses "+n+" élément(s) liés (tâches, opérations, devis/factures, pointages) ? Cette action est définitive.";
+    else if(kind=="taches")msg="Supprimer cette tâche ? Les "+n+" élément(s) liés seront conservés mais ne seront plus rattachés à une tâche.";
+    else if(kind=="clients")msg="Supprimer ce client ? Ses "+n+" chantier(s)/devis seront conservés, sans client.";
+    else msg="Supprimer ce membre ? Ses "+n+" pointage(s) seront aussi supprimés.";
+  }
+  if(!confirm(msg))return;
+  S[kind]=S[kind].filter(function(x){return x.id!==id});
+  if(kind=="chantiers"){var tids=S.taches.filter(function(t){return t.chantier===id}).map(function(t){return t.id});
+    ["taches","finances","devis","pointages"].forEach(function(k){S[k]=S[k].filter(function(x){return x.chantier!==id&&tids.indexOf(x.tache)<0})})}
+  else if(kind=="taches"){["finances","devis","pointages"].forEach(function(k){S[k].forEach(function(x){if(x.tache===id)x.tache=""})})}
+  else if(kind=="clients"){["chantiers","devis"].forEach(function(k){S[k].forEach(function(x){if(x.client===id)x.client=""})})}
+  else if(kind=="equipes"){S.pointages=S.pointages.filter(function(p){return p.membre!==id});S.chantiers.forEach(function(c){if(c.equipe)c.equipe=c.equipe.filter(function(m){return m!==id})})}
+  save();render();
+}
+function acts(k,id){return "<div class='row'><button class='btn g s' onclick=\"edit('"+k+"','"+id+"')\">Modifier</button><button class='btn g s' onclick=\"del('"+k+"','"+id+"')\">Supprimer</button></div>"}
+function head(k,title){return "<div class='bar'><h2>"+title+"</h2><div class='row' style='margin:0'><button class='btn g' onclick=\"exportCSV('"+k+"')\">Exporter Excel</button><button class='btn' onclick=\"edit('"+k+"')\">+ Ajouter</button></div></div>"}
+function unpaid(){var t=0;S.devis.forEach(function(d){if(d.type=="Facture"&&d.statut!="Payé"&&d.statut!="Refusé")t+=Number(d.montant)||0});return t}
+function sums(cid){
+  var r=0,d=0;S.finances.forEach(function(x){if(!cid||x.chantier===cid){var v=Number(x.montant)||0;if(x.type=="Recette")r+=v;else d+=v}});
+  return{r:r,d:d,s:r-d};
+}
+
+var V={
+dash:function(){
+  var t=sums(),act=S.chantiers.filter(function(c){return c.statut=="En cours"}).length;
+  var h="<div class='grid'>"+
+  "<div class='card'><div class='mu'>Chantiers en cours</div><div class='kpi'>"+act+" / "+S.chantiers.length+"</div></div>"+
+  "<div class='card'><div class='mu'>Recettes</div><div class='kpi ok'>"+fm(t.r)+"</div></div>"+
+  "<div class='card'><div class='mu'>Dépenses</div><div class='kpi ko'>"+fm(t.d)+"</div></div>"+
+  "<div class='card'><div class='mu'>Solde</div><div class='kpi "+(t.s>=0?"ok":"ko")+"'>"+fm(t.s)+"</div></div>"+
+  "<div class='card'><div class='mu'>Factures à encaisser</div><div class='kpi'>"+fm(unpaid())+"</div></div>"+
+  "<div class='card'><div class='mu'>Main-d’œuvre pointée</div><div class='kpi'>"+fm(mo())+"</div></div></div>"+
+  "<div class='bar'><h2>Budget par chantier</h2></div>";
+  if(!S.chantiers.length)return h+"<div class='empty'>Commencez par ajouter un client, puis un chantier.</div>";
+  return h+"<div class='tw'><table><tr><th>Chantier</th><th>Budget</th><th>Dépensé</th><th>Reste</th><th>Avancement</th></tr>"+
+  S.chantiers.map(function(c){var s=sums(c.id),re=c.budget-s.d;return"<tr><td>"+esc(c.nom)+"</td><td>"+fm(c.budget)+"</td><td>"+fm(s.d)+"</td><td class='"+(re>=0?"ok":"ko")+"'>"+fm(re)+"</td><td>"+(c.avanc||0)+"%</td></tr>"}).join("")+"</table></div>";
+},
+chantiers:function(){
+  var h=head("chantiers","Chantiers");
+  if(!S.chantiers.length)return h+"<div class='empty'>Aucun chantier.</div>";
+  return h+"<div class='grid'>"+S.chantiers.map(function(c){
+    var s=sums(c.id);
+    return"<div class='card'><h3>"+esc(c.nom)+"</h3><span class='tag'>"+esc(c.statut)+"</span>"+
+    "<div class='mu' style='margin-top:6px'>Client : "+esc(nm("clients",c.client))+"<br>Lieu : "+esc(c.lieu||"—")+"<br>"+esc(c.debut||"?")+" → "+esc(c.fin||"?")+"<br>Équipe : "+esc((c.equipe||[]).map(function(i){return nm("equipes",i)}).join(", ")||"—")+"</div>"+
+    "<div class='prog'><i style='width:"+Math.min(100,c.avanc||0)+"%'></i></div><div class='mu'>"+(c.avanc||0)+"% · Budget "+fm(c.budget)+"<br>Dépensé "+fm(s.d)+" · Encaissé "+fm(s.r)+"<br>Main-d’œuvre pointée "+fm(mo(c.id))+"</div>"+acts("chantiers",c.id)+"<div class='row'><button class='btn s' onclick=\"rapC='"+c.id+"';tab='rapport';render()\">Rapport imprimable</button></div></div>"}).join("")+"</div>";
+},
+equipes:function(){
+  var h=head("equipes","Équipes");
+  if(!S.equipes.length)return h+"<div class='empty'>Aucun membre d’équipe.</div>";
+  return h+"<div class='grid'>"+S.equipes.map(function(e){
+    var ch=S.chantiers.filter(function(c){return(c.equipe||[]).indexOf(e.id)>-1}).map(function(c){return c.nom});
+    return"<div class='card'><h3>"+esc(e.nom)+"</h3><div class='mu'>"+esc(e.role||"—")+" · "+esc(e.tel||"—")+"<br>Tarif : "+fm(e.tarif)+" / jour<br>Chantiers : "+esc(ch.join(", ")||"—")+"</div>"+acts("equipes",e.id)+"</div>"}).join("")+"</div>";
+},
+clients:function(){
+  var h=head("clients","Clients");
+  if(!S.clients.length)return h+"<div class='empty'>Aucun client.</div>";
+  return h+"<div class='grid'>"+S.clients.map(function(c){
+    var n=S.chantiers.filter(function(x){return x.client===c.id}).length;
+    return"<div class='card'><h3>"+esc(c.nom)+"</h3><div class='mu'>"+esc(c.tel||"—")+"<br>"+esc(c.email||"—")+"<br>"+esc(c.adresse||"—")+"<br>"+n+" chantier(s)</div>"+acts("clients",c.id)+"</div>"}).join("")+"</div>";
+},
+finances:function(){
+  var t=sums(),h=head("finances","Finances")+"<div class='grid' style='margin-bottom:12px'><div class='card'><div class='mu'>Recettes</div><div class='kpi ok'>"+fm(t.r)+"</div></div><div class='card'><div class='mu'>Dépenses</div><div class='kpi ko'>"+fm(t.d)+"</div></div><div class='card'><div class='mu'>Solde</div><div class='kpi "+(t.s>=0?"ok":"ko")+"'>"+fm(t.s)+"</div></div></div>";
+  if(!S.finances.length)return h+"<div class='empty'>Aucune opération.</div>";
+  var l=S.finances.slice().sort(function(a,b){return(b.date||"").localeCompare(a.date||"")});
+  return h+"<div class='tw'><table><tr><th>Date</th><th>Type</th><th>Montant</th><th>Chantier</th><th>Tâche</th><th>Catégorie</th><th>Description</th><th></th></tr>"+
+  l.map(function(f){return"<tr><td>"+esc(f.date)+"</td><td class='"+(f.type=="Recette"?"ok":"ko")+"'>"+esc(f.type)+"</td><td>"+fm(f.montant)+"</td><td>"+esc(nm("chantiers",f.chantier))+"</td><td>"+esc(f.tache?nm("taches",f.tache):"")+"</td><td>"+esc(f.cat)+"</td><td>"+esc(f.desc)+"</td><td><button class='btn g s' onclick=\"edit('finances','"+f.id+"')\">✎</button> <button class='btn g s' onclick=\"del('finances','"+f.id+"')\">✕</button></td></tr>"}).join("")+"</table></div>";
+},
+taches:function(){
+  var h=head("taches","Tâches et budgets");
+  if(!S.chantiers.length)return h+"<div class='empty'>Ajoutez d’abord un chantier.</div>";
+  return h+S.chantiers.map(function(c){
+    var l=S.taches.filter(function(t){return t.chantier===c.id}),aff=0;
+    l.forEach(function(t){aff+=t.budget||0});
+    var left=(c.budget||0)-aff,tf=0,tu=0;
+    l.forEach(function(t){var k=tcost(t.id);tf+=k.fact;tu+=k.use});
+    return"<div class='bar' style='margin-top:18px'><h3 style='margin:0'>"+esc(c.nom)+"</h3><button class='btn g s' onclick=\"addT('"+c.id+"')\">+ Tâche</button></div>"+
+    "<div class='mu' style='margin-bottom:6px'>Budget chantier "+fm(c.budget)+" · Affecté aux tâches "+fm(aff)+" · <span class='"+(left>=0?"ok":"ko")+"'>"+(left>=0?"Reste à affecter ":"Dépassement ")+fm(Math.abs(left))+"</span><br>Facturé "+fm(tf)+" · Utilisé "+fm(tu)+" · Solde <b class='"+(tf-tu>=0?"ok":"ko")+"'>"+fm(tf-tu)+"</b></div>"+
+    (l.length?"<div class='tw'><table><tr><th>Tâche</th><th>Statut</th><th>Budget</th><th>Coût facturé</th><th>Matériaux</th><th>Main-d’œuvre</th><th>Autres</th><th>Coût utilisé</th><th>Reste budget</th><th>Solde (facturé − utilisé)</th><th></th></tr>"+
+    l.map(function(t){var k=tcost(t.id),r=k.fact-k.use,rb=(t.budget||0)-k.use;return"<tr><td>"+esc(t.nom)+"</td><td><span class='tag'>"+esc(t.statut)+"</span></td><td>"+fm(t.budget)+"</td><td>"+fm(k.fact)+"</td><td>"+fm(k.mat)+"</td><td>"+fm(k.mo)+"</td><td>"+fm(k.aut)+"</td><td class='"+(k.use>(t.budget||0)&&t.budget?"ko":"")+"'>"+fm(k.use)+"</td><td class='"+(rb>=0?"ok":"ko")+"'>"+fm(rb)+"</td><td class='"+(r>=0?"ok":"ko")+"'><b>"+fm(r)+"</b></td><td><button class='btn g s' onclick=\"edit('taches','"+t.id+"')\">✎</button> <button class='btn g s' onclick=\"del('taches','"+t.id+"')\">✕</button></td></tr>"}).join("")+"</table></div>":"<div class='mu'>Aucune tâche pour ce chantier.</div>");
+  }).join("");
+},
+devis:function(){
+  var h=head("devis","Devis et factures");
+  if(!S.devis.length)return h+"<div class='empty'>Aucun devis ni facture.</div>";
+  var l=S.devis.slice().sort(function(a,b){return(b.date||"").localeCompare(a.date||"")});
+  return h+"<div class='tw'><table><tr><th>N°</th><th>Type</th><th>Date</th><th>Client</th><th>Chantier</th><th>Tâche</th><th>Montant</th><th>Statut</th><th>Objet</th><th></th></tr>"+
+  l.map(function(d){return"<tr><td>"+esc(d.numero)+"</td><td>"+esc(d.type)+"</td><td>"+esc(d.date)+"</td><td>"+esc(nm("clients",d.client))+"</td><td>"+esc(nm("chantiers",d.chantier))+"</td><td>"+esc(d.tache?nm("taches",d.tache):"")+"</td><td>"+fm(d.montant)+"</td><td><span class='tag'>"+esc(d.statut)+"</span></td><td>"+esc(d.desc)+"</td><td><button class='btn g s' onclick=\"edit('devis','"+d.id+"')\">✎</button> <button class='btn g s' onclick=\"del('devis','"+d.id+"')\">✕</button></td></tr>"}).join("")+"</table></div>";
+},
+pointages:function(){
+  var h=head("pointages","Pointage des ouvriers");
+  if(!S.pointages.length)return h+"<div class='empty'>Aucun pointage. Ajoutez d’abord des membres dans « Équipes ».</div>";
+  var l=S.pointages.slice().sort(function(a,b){return(b.date||"").localeCompare(a.date||"")});
+  return h+"<div class='tw'><table><tr><th>Date</th><th>Ouvrier</th><th>Chantier</th><th>Tâche</th><th>Jours</th><th>Coût</th><th>Note</th><th></th></tr>"+
+  l.map(function(p){var m=by("equipes",p.membre);return"<tr><td>"+esc(p.date)+"</td><td>"+esc(nm("equipes",p.membre))+"</td><td>"+esc(nm("chantiers",p.chantier))+"</td><td>"+esc(p.tache?nm("taches",p.tache):"")+"</td><td>"+(p.jours||0)+"</td><td>"+fm((p.jours||0)*(m?m.tarif||0:0))+"</td><td>"+esc(p.note)+"</td><td><button class='btn g s' onclick=\"edit('pointages','"+p.id+"')\">✎</button> <button class='btn g s' onclick=\"del('pointages','"+p.id+"')\">✕</button></td></tr>"}).join("")+"</table></div>";
+},
+rapport:function(){
+  var sel="<div class='bar noprint'><h2>Rapport par chantier</h2><select id='rsel' style='width:auto' onchange=\"rapC=this.value;render()\"><option value=''>— Choisir un chantier —</option>"+S.chantiers.map(function(c){return"<option value='"+c.id+"'"+(c.id===rapC?" selected":"")+">"+esc(c.nom)+"</option>"}).join("")+"</select></div>";
+  var c=by("chantiers",rapC);
+  if(!c)return sel+"<div class='empty'>Choisissez un chantier pour générer son rapport.</div>";
+  var s=sums(c.id),m=mo(c.id),cats={};
+  S.finances.forEach(function(f){if(f.chantier===c.id&&f.type=="Dépense")cats[f.cat]=(cats[f.cat]||0)+f.montant});
+  function tb(head,rows){return rows.length?"<div class='tw'><table><tr>"+head.map(function(x){return"<th>"+x+"</th>"}).join("")+"</tr>"+rows.map(function(r){return"<tr>"+r.map(function(x){return"<td>"+esc(x)+"</td>"}).join("")+"</tr>"}).join("")+"</table></div>":"<div class='mu'>Aucune donnée.</div>"}
+  var body="<div class='rep' id='rep'>"+entHead()+"<h2>Rapport de chantier :"+esc(c.nom)+"</h2><div class='mu'>Édité le "+new Date().toLocaleDateString("fr-FR")+"</div>"+
+  "<h3>Informations</h3><div>Client : "+esc(nm("clients",c.client))+"<br>Lieu : "+esc(c.lieu||"—")+"<br>Statut : "+esc(c.statut)+" · Avancement : "+(c.avanc||0)+"%<br>Période : "+esc(c.debut||"?")+" → "+esc(c.fin||"?")+"<br>Équipe : "+esc((c.equipe||[]).map(function(i){return nm("equipes",i)}).join(", ")||"—")+"</div>"+
+  "<h3>Synthèse financière</h3>"+tb(["Budget","Recettes","Dépenses","Main-d’œuvre pointée","Reste sur budget"],[[fm(c.budget),fm(s.r),fm(s.d),fm(m),fm(c.budget-s.d)]])+
+  "<h3>Dépenses par catégorie</h3>"+tb(["Catégorie","Montant"],Object.keys(cats).map(function(k){return[k,fm(cats[k])]}))+
+  "<h3>Tâches et budgets</h3>"+tb(["Tâche","Statut","Budget","Coût facturé","Matériaux","Main-d’œuvre","Autres","Coût utilisé","Reste budget","Solde"],S.taches.filter(function(t){return t.chantier===c.id}).map(function(t){var k=tcost(t.id);return[t.nom,t.statut,fm(t.budget),fm(k.fact),fm(k.mat),fm(k.mo),fm(k.aut),fm(k.use),fm((t.budget||0)-k.use),fm(k.fact-k.use)]}))+
+  "<h3>Devis et factures</h3>"+tb(["N°","Type","Date","Montant","Statut"],S.devis.filter(function(d){return d.chantier===c.id}).map(function(d){return[d.numero,d.type,d.date,fm(d.montant),d.statut]}))+
+  "<h3>Pointages</h3>"+tb(["Date","Ouvrier","Jours","Coût"],S.pointages.filter(function(p){return p.chantier===c.id}).map(function(p){var e=by("equipes",p.membre);return[p.date,nm("equipes",p.membre),p.jours,fm((p.jours||0)*(e?e.tarif||0:0))]}))+
+  "<h3>Opérations financières</h3>"+tb(["Date","Type","Montant","Catégorie","Description"],S.finances.filter(function(f){return f.chantier===c.id}).map(function(f){return[f.date,f.type,fm(f.montant),f.cat,f.desc]}))+"</div>";
+  return sel+"<div class='row noprint' style='margin:0 0 10px'><button class='btn' onclick='window.print()'>Imprimer</button><button class='btn g' onclick='dlRapport()'>Télécharger (HTML)</button></div>"+body;
+}};
+function dlRapport(){
+  var e=$("rep");if(!e)return;
+  dl("rapport-"+(nm("chantiers",rapC)).replace(/\W+/g,"-")+".html","<!doctype html><html lang='fr'><meta charset='utf-8'><title>Rapport</title><style>body{font:14px system-ui;margin:24px}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #ccc;padding:6px;text-align:left}</style>"+e.outerHTML,"text/html");
+}
+var TABS=[["dash","Tableau de bord"],["chantiers","Chantiers"],["taches","Tâches"],["equipes","Équipes"],["clients","Clients"],["devis","Devis / Factures"],["pointages","Pointage"],["finances","Finances"],["rapport","Rapport"]];
+function render(){
+  var en=(S.ent&&S.ent.nom)||"";
+  $("ttl").textContent=en;
+  $("sub").textContent="";
+  document.title=en?en+" — Gestion de chantiers":"Gestion de chantiers";
+  var lgi=$("lg");if(S.ent&&S.ent.logo){lgi.src=S.ent.logo;lgi.style.display="block"}else{lgi.style.display="none"}
+  $("nav").innerHTML=TABS.map(function(t){return"<button class='"+(t[0]==tab?"on":"")+"' onclick=\"tab='"+t[0]+"';render()\">"+t[1]+"</button>"}).join("");
+  $("main").innerHTML=(en?"":"<div class='card noprint' style='margin:8px 0 12px'>👋 Bienvenue ! Donnez le nom de votre entreprise pour personnaliser l’application. <button class='btn s' onclick='editEnt()'>Renseigner</button></div>")+V[tab]();
+}
+load();for(var _k in S)lastJ[_k]=JSON.stringify(S[_k]);try{JSON.parse(localStorage.getItem(KEY+"-dirty")||"[]").forEach(function(k){if(k in S)dirty[k]=1})}catch(e){}render();
+var OFFMSG="Hors ligne : vos données sont enregistrées sur cet appareil et seront envoyées dès que la connexion revient.";
+var LOCALMSG="Données enregistrées sur cet appareil seulement. Connectez-vous (Mon entreprise) pour les synchroniser et les sauvegarder en ligne.";
+$("dlg").addEventListener("close",function(){if(pendSnap){var s=pendSnap;pendSnap=null;onRemote(s)}});
+setSync("Chargement…");
+setTimeout(function(){if(uid&&!connected)setSync(OFFMSG)},10000);
+
+var FBx=null,uid=null,userEmail="",unsubS=null,bakDone=false,LOCALFLAG=KEY+"-local";
+function pd(){try{localStorage.setItem(KEY+"-dirty",JSON.stringify(Object.keys(dirty)))}catch(e){}}
+function authMsg(c){var m={"auth/invalid-email":"Adresse e-mail invalide.","auth/missing-password":"Entrez votre mot de passe.","auth/invalid-credential":"E-mail ou mot de passe incorrect.","auth/wrong-password":"E-mail ou mot de passe incorrect.","auth/user-not-found":"Aucun compte avec cet e-mail.","auth/email-already-in-use":"Un compte existe déjà avec cet e-mail. Utilisez « Se connecter ».","auth/weak-password":"Mot de passe trop court (6 caractères minimum).","auth/network-request-failed":"Pas de connexion internet.","auth/too-many-requests":"Trop d’essais. Réessayez dans quelques minutes.","auth/operation-not-allowed":"La connexion par e-mail n’est pas activée dans Firebase."};return m[c]||("Erreur : "+c)}
+function showAuth(){$("auth").style.display="block"}
+function hideAuth(){$("auth").style.display="none"}
+function aerr(t,ok){var e=$("aerr");e.textContent=t||"";e.style.color=ok?"var(--ok)":"var(--ko)"}
+function wireAuth(){
+  $("alogin").onclick=function(){aerr("");FBx.Au.signInWithEmailAndPassword(FBx.auth,$("aem").value.trim(),$("apw").value).catch(function(e){aerr(authMsg(e.code))})};
+  $("areg").onclick=function(){aerr("");FBx.Au.createUserWithEmailAndPassword(FBx.auth,$("aem").value.trim(),$("apw").value).catch(function(e){aerr(authMsg(e.code))})};
+  $("areset").onclick=function(){var em=$("aem").value.trim();if(!em){aerr("Entrez d’abord votre e-mail.");return}FBx.Au.sendPasswordResetEmail(FBx.auth,em).then(function(){aerr("E-mail de réinitialisation envoyé.",true)}).catch(function(e){aerr(authMsg(e.code))})};
+  $("askip").onclick=function(){try{localStorage.setItem(LOCALFLAG,"1")}catch(e){}hideAuth();setSync(LOCALMSG)};
+}
+function acctHtml(){
+  if(!FBx)return"<div class='mu'>Synchronisation en ligne indisponible pour le moment.</div>";
+  if(uid)return"<div class='mu'>Connecté : "+esc(userEmail)+"</div><button type='button' class='btn g s' id='aout' style='margin-top:6px'>Se déconnecter</button>";
+  return"<button type='button' class='btn g s' id='ain'>Se connecter / créer un compte</button>";
+}
+function wireAcct(){
+  var o=$("aout"),i=$("ain");
+  if(o)o.onclick=doLogout;
+  if(i)i.onclick=function(){$("dlg").close();showAuth()};
+}
+function doLogout(){
+  if(writing||Object.keys(dirty).length){alert("Des modifications ne sont pas encore envoyées à votre compte. Attendez la synchronisation (connexion internet requise) avant de vous déconnecter.");return}
+  if(!confirm("Se déconnecter ? Les données seront retirées de cet appareil (elles restent dans votre compte)."))return;
+  FBx.Au.signOut(FBx.auth).then(function(){
+    for(var k in S)S[k]=(k=="ent"?{}:[]);
+    lastJ={};for(var k2 in S)lastJ[k2]=JSON.stringify(S[k2]);
+    try{localStorage.removeItem(KEY);localStorage.removeItem(KEY+"-dirty");localStorage.removeItem(KEY+"-avant-sync");localStorage.removeItem(LOCALFLAG)}catch(e){}
+    $("dlg").close();render();
+  });
+}
+onRemote=function(qs){
+  if(qs.metadata.fromCache)return;
+  connected=true;
+  if($("dlg").open){pendSnap=qs;return}
+  var o={};qs.forEach(function(d){try{o[d.id]=JSON.parse(d.data().j)}catch(e){}});
+  dbExists=true;applyRemote(o);
+  if(Object.keys(dirty).length)flush();
+  else if(!writing)setSync("✓ Synchronisé avec votre compte");
+};
+function startSync(){
+  var F=FBx;
+  function wr(o){var b=F.Fs.writeBatch(F.db);Object.keys(o).forEach(function(k){b.set(F.Fs.doc(F.db,"users",uid,"store",k),{j:JSON.stringify(o[k]),t:Date.now()})});return b.commit()}
+  ref={set:wr,update:wr};connected=false;
+  setSync("Connexion à votre compte…");
+  unsubS=F.Fs.onSnapshot(F.Fs.collection(F.db,"users",uid,"store"),{includeMetadataChanges:true},function(qs){onRemote(qs)},function(e){
+    setSync(e&&e.code=="permission-denied"?"⚠ Accès refusé : vérifiez les règles de sécurité Firestore.":"⚠ Synchronisation interrompue ("+((e&&e.code)||"erreur")+")");
+  });
+}
+function stopSync(){if(unsubS){unsubS();unsubS=null}ref=null;connected=false;uid=null}
+function initCloud(F){
+  if(!F){setSync(LOCALMSG);return}
+  FBx=F;wireAuth();
+  F.Au.onAuthStateChanged(F.auth,function(u){
+    if(u){stopSync();uid=u.uid;userEmail=u.email||"";hideAuth();startSync()}
+    else{stopSync();userEmail="";var lf="";try{lf=localStorage.getItem(LOCALFLAG)}catch(e){}if(!lf)showAuth();setSync(LOCALMSG)}
+  });
+}
+var instEvt=null;
+var isStandalone=!!((window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||navigator.standalone);
+var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent||"")||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();instEvt=e;if(!isStandalone)$("inst").style.display=""});
+window.addEventListener("appinstalled",function(){instEvt=null;$("inst").style.display="none"});
+if(!isStandalone&&isIOS)$("inst").style.display="";
+function doInstall(){
+  if(instEvt){var ev=instEvt;ev.prompt();ev.userChoice.then(function(){instEvt=null;$("inst").style.display="none"});return}
+  $("f").innerHTML="<h3 style='margin:0'>Installer l’application</h3><div style='margin-top:10px'>"+
+  (isIOS?"<b>iPhone / iPad</b><div class='mu'>À faire dans Safari (pas dans un autre navigateur).</div><ol><li>Appuyez sur le bouton <b>Partager</b> (carré avec une flèche vers le haut).</li><li>Choisissez <b>Sur l’écran d’accueil</b>.</li><li>Appuyez sur <b>Ajouter</b>.</li></ol>"
+  :"<b>Android (Chrome)</b><ol><li>Ouvrez le menu <b>⋮</b> du navigateur.</li><li>Choisissez <b>Installer l’application</b> (ou « Ajouter à l’écran d’accueil »).</li></ol><b>Ordinateur (Chrome ou Edge)</b><ol><li>Cliquez sur l’icône d’installation dans la barre d’adresse.</li></ol>")+
+  "</div><div class='row' style='margin-top:16px;justify-content:flex-end'><button type='button' class='btn' id='cx'>Fermer</button></div>";
+  $("cx").onclick=function(){$("dlg").close()};$("dlg").showModal();
+}
+var APP_VERSION="20261118-2300";
+var updPending=false;
+function applyUpdate(){
+  if($("dlg").open){updPending=true;return}
+  var go=function(){location.reload()};
+  if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){navigator.serviceWorker.getRegistration().then(function(r){return r&&r.update()}).then(go,go)}else go();
+}
+function checkUpdate(){
+  if(location.protocol.indexOf("http")!=0||!navigator.onLine)return;
+  fetch("index.html?v="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){
+    var m=t.match(/APP_VERSION="([^"]+)"/);
+    if(m&&m[1]!==APP_VERSION)applyUpdate();
+  }).catch(function(){});
+}
+$("dlg").addEventListener("close",function(){if(updPending){updPending=false;applyUpdate()}});
+setTimeout(checkUpdate,5000);
+setInterval(checkUpdate,30*60*1000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpdate()});
+if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(function(){})}
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+</script>
+<script type="module">
+(async function(){
+  var CFG={apiKey:"AIzaSyCcBjcp-5voBz233Dut04lTdD8g-Wq8NGg",authDomain:"umbono-group.firebaseapp.com",projectId:"umbono-group",storageBucket:"umbono-group.firebasestorage.app",messagingSenderId:"626966928473",appId:"1:626966928473:web:dc1e27e1b568769dec6548"};
+  try{
+    var B="https://www.gstatic.com/firebasejs/10.12.2/";
+    var m=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-auth.js"),import(B+"firebase-firestore.js")]);
+    var A=m[0],Au=m[1],Fs=m[2];
+    var app=A.initializeApp(CFG);
+    var auth=Au.getAuth(app);
+    var db;
+    try{db=Fs.initializeFirestore(app,{localCache:Fs.persistentLocalCache({tabManager:Fs.persistentMultipleTabManager()})})}catch(e){db=Fs.getFirestore(app)}
+    window.initCloud({A:A,Au:Au,Fs:Fs,auth:auth,db:db});
+  }catch(e){window.initCloud(null)}
+})();
+</script>
+</body>
+</html>
